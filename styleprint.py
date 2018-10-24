@@ -2,7 +2,7 @@
 
 import warnings
 
-class style:
+class Encoding:
     fonts = {
         'roman'         : 0,
         'bold'          : 1,
@@ -60,14 +60,13 @@ class style:
 
     @staticmethod
     def get_format(**format):
-
         # Overloadable type
         if format.get('type'):
             type = format.get('type')
-            if type not in style.types:
+            if type not in Encoding.types:
                 warnings.warn("Unknown type ignored.")
             else:
-                font, color, background_color = style.types[type]
+                font, color, background_color = Encoding.types[type]
 
                 format.setdefault('f', font)
                 format.setdefault('c', color)
@@ -80,33 +79,31 @@ class style:
             format.get('bcolor') or format.get('bc') or 'none'
 
         warning_msg = "Unknown {el}, defaulting to {default}."
-        if font not in style.fonts:
+        if font not in Encoding.fonts:
             font = 'roman'
             warnings.warn(warning_msg.format(el="font", default=font))
 
-        if color not in style.colors:
+        if color not in Encoding.colors:
             color = 'gray'
             warnings.warn(warning_msg.format(el="color", default=color))
 
-        if background_color not in style.background_colors:
+        if background_color not in Encoding.background_colors:
             background_color = 'none'
             warnings.warn(warning_msg.format(el="background color", default=background_color))
 
         return (
-            style.fonts[font],
-            style.colors[color],
-            style.background_colors[background_color]
+            Encoding.fonts[font],
+            Encoding.colors[color],
+            Encoding.background_colors[background_color]
         )
 
-    @staticmethod
-    def format(string, **format):
-        font, color, background_color = style.get_format(**format)
+def sformat(string, **format) -> str:
+    font, color, background_color = Encoding.get_format(**format)
 
-        return f"\033[{font};{color};{background_color}m{string}{style.end}"
+    return f"\033[{font};{color};{background_color}m{string}{Encoding.end}"
 
-    @staticmethod
-    def print(string, end='\n', **format):
-        print(style.format(string, **format), end=end)
+def sprint(string, end='\n', **format) -> None:
+    print(sformat(string, **format), end=end)
 
 if "__main__" == __name__:
-    style.print("Hello world!", type='alert')
+    sprint("Hello world!", type='alert')
