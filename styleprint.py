@@ -1,84 +1,6 @@
 #!/usr/bin/python -i
 
-"""
-This is styleprint or sprint. It allows for simple stylized text in unix consoles.
-
-== Functions ==
-sprint(string, end='\\n', **format)  --  prints formatted text
-sformat(string, **format)           --  formats text
-register_type(**types)              --  registers new type
-register_alias(**aliases)           --  registers new alias
-
-== Formatting ==
-The **format argument accepts the following keyword and values
-
-= Font =
-
-Keywords:
- - font, f:
-
-Values:
- - roman
- - bold
- - italic
- - underline
- - blink
- - mark
- - strikethrough
- - default (roman)
-
-= Colour =
-Keywords:
- - color, c:
-
-Values:
- - black, k
- - darkred
- - darkgreen
- - darkyellow
- - blue, b
- - darkmagenta
- - darkcyan
- - lightgrey, lightgray
- - grey, gray
- - darkgrey, darkgray
- - red, r
- - green, g
- - yellow, y
- - violet
- - magenta, m
- - cyan, c
- - white, w
- - default (gray-ish)
-
-= Background colour =
-
-Keywords:
- - backgroundcolor, bgcolor, bgc, bcolor, bc
-
-Values:
- - black, k
- - red, r
- - green, g
- - yellow, y
- - blue, b
- - magenta, m
- - cyan, c
- - white, w
-
-= Predefined types =
-
-Argument name:
-- type
-
-Valid keywords:
-              font    color     background color
- - warning |  bold    yellow    none
- - alert   |  blink   red       none
- - fail    |  roman   red       none
- - okay    |  roman   green     none
-"""
-
+import sys
 import warnings
 
 class Encoding:
@@ -140,8 +62,10 @@ class Encoding:
     types = {
         'warning' : ('bold',  'yellow', 'none'),
         'alert'   : ('blink', 'red',    'none'),
+        'error'   : ('roman', 'red',    'none'),
         'fail'    : ('roman', 'red',    'none'),
         'okay'    : ('roman', 'green',  'none'),
+        'success' : ('roman', 'green',  'none'),
     }
 
     end = "\033[0m"
@@ -225,17 +149,94 @@ def sformat(string, **format) -> str:
     """
     Formats the string.
 
-    Input should be of the form:
-    "string_to_format", **format
-
     Example:
     sformat("Hello world!", color="red", font="italic")
+
+    This is styleprint or sprint. It allows for simple stylized text in unix consoles.
+
+    == Functions ==
+    sprint(string, end='\\n', **format)  --  prints formatted text
+    sformat(string, **format)           --  formats text
+    register_type(**types)              --  registers new type
+    register_alias(**aliases)           --  registers new alias
+
+    == Formatting ==
+    The **format argument accepts the following keyword and values
+
+    Parameters
+    ----------
+    font, f : str
+        Font keyword, used to define the font style.
+
+        Values:
+            - roman
+            - bold
+            - italic
+            - underline
+            - blink
+            - mark
+            - strikethrough
+            - default (roman)
+
+    - color, c : str
+        Color keyword, used to define the text-color.
+
+
+        Values:
+            - black, k
+            - darkred
+            - darkgreen
+            - darkyellow
+            - blue, b
+            - darkmagenta
+            - darkcyan
+            - lightgrey, lightgray
+            - grey, gray
+            - darkgrey, darkgray
+            - red, r
+            - green, g
+            - yellow, y
+            - violet
+            - magenta, m
+            - cyan, c
+            - white, w
+            - default (gray-ish)
+
+
+    backgroundcolor, bgcolor, bgc, bcolor, bc : str
+        The background color keyword, used to define text-highlighting..
+
+        Values:
+            - black, k
+            - red, r
+            - green, g
+            - yellow, y
+            - blue, b
+            - magenta, m
+            - cyan, c
+            - white, w
+
+
+    type : str
+        The type argument, used to apply predefined styles (combinations)
+
+        Valid keywords (by default)
+                        font    color     background color
+            - warning | bold    yellow    none
+            - alert   | blink   red       none
+            - fail    | roman   red       none
+            - okay    | roman   green     none
+
+
+    Returns
+    -------
+    : None
     """
     font, color, background_color = Encoding.get_format(**format)
 
     return f"\033[{font};{color};{background_color}m{string}{Encoding.end}"
 
-def sprint(string, end='\n', **format) -> None:
+def sprint(*stringable, sep=' ', end='\n', file=sys.stdout, flush=False, **format) -> None:
     """
     Prints a formatted string.
 
@@ -244,8 +245,33 @@ def sprint(string, end='\n', **format) -> None:
 
     Example:
     sprint("Hello world!", bgcolor="yellow", font="blink")
+
+    Parameters
+    ----------
+    *stringable : objects w/ __str__ method
+        A string or objects that should be printed
+
+    sep : str = ' '
+        A separator string to join stringable.
+
+    end : str = '\n'
+        A string to be appended to the stringable.
+
+    file : object w/ write(str) method = sys.stdout
+        The place where the stringable will be printed. (Defaults to terminal.)
+
+    flush : bool
+        Determines whether or not the stream is forcibly flushed.
+
+    **format : {kw : str}
+        See help(styleprint.sformat)
+
+    Returns
+    -------
+    : None
     """
-    print(sformat(string, **format), end=end)
+
+    print(sformat(sep.join(map(str, stringable)), **format), end=end, file=sys.stdout, flush=False)
 
 if "__main__" == __name__:
     sprint("Hello world!", type="alert")
